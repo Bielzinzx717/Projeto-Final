@@ -29,6 +29,7 @@ def add():
         category = request.form['category']
         date = datetime.strptime(request.form['date'], '%Y-%m-%d')
         new_expense = Expense(description=description, value=value, category=category, date=date)
+        
         try:
             new_expense.validate()
             db.session.add(new_expense)
@@ -36,12 +37,10 @@ def add():
             flash('Despesa adicionada com sucesso!', 'success')
         except ValueError as e:
             flash(str(e), 'danger')
-
-    
-        db.session.add(new_expense)
-        db.session.commit()
-        return redirect(url_for('index'))
+        
+        return redirect(url_for('add'))
     return render_template('add.html')
+
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
@@ -62,5 +61,11 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('index'))
 
+
+@app.route('/filter')
+def filter():
+    category = request.args.get('category')
+    expenses = Expense.query.filter_by(category=category).all()
+    return render_template("index.html", expenses=expenses)
 if __name__ == '__main__':
     app.run(debug=True)
